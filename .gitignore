@@ -1,0 +1,22 @@
+# Binaries
+llm-proxy
+llm-proxy.exe
+*.exe
+*.out
+
+# Build artifacts
+/bin/
+/build/
+
+# Coverage reports
+coverage.out
+coverage.html
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+

@@ -1,0 +1,73 @@
+# Production Configuration
+# Optimized for performance, reliability, and cost efficiency
+
+server:
+  host: "0.0.0.0"
+  port: "8080"
+  app_name: "LLM Router"
+  referer_url: "https://your-domain.com"
+  cors_origins: ["https://your-domain.com", "https://api.your-domain.com"]
+
+llm_provider:
+  api_key: "${OPENROUTER_API_KEY}"
+  base_url: "https://openrouter.ai/api/v1"
+  allowed_models:
+    # Mix of free and premium models for production
+    - "meta-llama/llama-3.2-3b-instruct:free"
+    - "google/gemma-2-9b-it:free"
+    - "microsoft/phi-3-mini-128k-instruct:free"
+    - "anthropic/claude-3.5-sonnet"
+    - "openai/gpt-4o-mini"
+    - "openai/gpt-4o"
+
+bandit:
+  default_model: "meta-llama/llama-3.2-3b-instruct:free"
+  thompson_sampling:
+    feedback_weight: 0.6        # Balanced feedback weight
+    latency_weight: 0.4         # Higher latency priority for production
+    cost_weight: -0.3           # Higher cost consideration
+    exploration_rate: 0.05      # Lower exploration for stable performance
+  similarity:
+    threshold: 0.8              # Higher threshold for conservative matching
+    max_similar_requests: 100   # More requests for better decisions
+    recency_days: 30            # Longer window for stable patterns
+    min_similar_requests: 10    # Higher minimum for confident decisions
+  cold_start:
+    min_confidence_score: 0.1
+    optimistic_prior: 0.7       # Slightly lower for conservative start
+    exploration_bonus: 0.05     # Lower bonus for stability
+    min_requests_for_global: 20 # More requests for reliable global stats
+  persistence:
+    batch_size: 200             # Larger batches for efficiency
+
+embedding:
+  service_type: "http"
+  service_url: "http://embedding-service:8001"
+  model_path: "./models/all-MiniLM-L6-v2"
+  max_workers: 8              # More workers for production load
+  cache_size: 2000            # Larger cache for production
+  timeout_ms: 3000            # Shorter timeout for responsiveness
+
+database:
+  enable_persistence: true    # Enable persistence for production
+  url: "${DATABASE_URL}"      # Use full connection string
+  host: "${DATABASE_HOST}"
+  port: "${DATABASE_PORT:-5432}"
+  user: "${DATABASE_USER}"
+  password: "${DATABASE_PASSWORD}"
+  name: "${DATABASE_NAME:-llm-router}"
+  ssl_mode: "${DATABASE_SSL_MODE:-require}"  # Require SSL in production
+  workers: 10                 # More workers for production
+  buffer_size: 2000           # Larger buffer for production
+
+circuit_breaker:
+  enabled: true
+  failure_threshold: 5
+  success_threshold: 3        # Higher threshold for stability
+  timeout: 60s
+  max_requests: 3
+
+logging:
+  level: "info"               # Standard logging for production
+  format: "json"              # Structured logging for production
+  report_caller: false        # Cleaner logs for production

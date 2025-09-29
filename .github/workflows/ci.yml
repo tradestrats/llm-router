@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+
+jobs:
+  go-service:
+    runs-on: ubuntu-latest
+    container: golang:1.23-alpine
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        apk add --no-cache git make
+        go mod download
+
+    - name: Run tests, build, and lint in parallel
+      run: |
+        go test ./... &
+        go build -o bin/llm-proxy main.go &
+        go fmt ./... &
+        wait
+
+  embedding-service:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Build embedding service Docker image
+      run: |
+        cd embedding-service
+        docker build -t embedding-service-test .
+    
+    - name: Run Python tests in Docker container
+      run: |
+        cd embedding-service
+        # Run unit tests in Docker container
+        docker run --rm embedding-service-test python -c "import pytest, fastapi, httpx, numpy; print('All test dependencies available')"
+        docker run --rm embedding-service-test python -m pytest test_main.py -v --tb=short
+    
+    - name: Test embedding service startup in Docker
+      run: |
+        cd embedding-service
+        # Start the service in Docker container
+        docker run --rm -d --name embedding-test -p 8001:8001 \
+          -e EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+          -e HOST=0.0.0.0 \
+          -e PORT=8001 \
+          -e WORKERS=1 \
+          -e MAX_CONCURRENT_REQUESTS=10 \
+          embedding-service-test
+        
+        # Wait for service to start with retries (faster with pre-downloaded model)
+        for i in {1..15}; do
+          if curl -f http://localhost:8001/ready >/dev/null 2>&1; then
+            echo "Service is ready after $i seconds"
+            break
+          fi
+          if [ $i -eq 15 ]; then
+            echo "Service failed to become ready within 15 seconds"
+            docker logs embedding-test
+            docker stop embedding-test
+            exit 1
+          fi
+          sleep 1
+        done
+        
+        # Test health endpoint
+        curl -f http://localhost:8001/health
+        
+        # Clean up
+        docker stop embedding-test

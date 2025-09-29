@@ -1,0 +1,78 @@
+services:
+  llm-proxy:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+      - PORT=8080
+      - HOST=0.0.0.0
+      - LLM_MODELS=meta-llama/llama-3.2-3b-instruct:free,google/gemma-2-9b-it:free,microsoft/phi-3-mini-128k-instruct:free
+      - LOG_LEVEL=info
+      # Database configuration
+      - ENABLE_PERSISTENCE=true
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=llm-proxy
+      - DATABASE_PASSWORD=llm-proxy_dev_password
+      - DATABASE_NAME=llm-proxy
+      - DATABASE_SSL_MODE=disable
+      - PERSISTENCE_WORKERS=5
+      - PERSISTENCE_BUFFER=1000
+      # Embedding service configuration
+      - EMBEDDING_SERVICE_TYPE=http
+      - EMBEDDING_SERVICE_URL=http://embedding-service:8001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      embedding-service:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  embedding-service:
+    build: ./embedding-service
+    ports:
+      - "8001:8001"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8001
+      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+      - WORKERS=1
+      - MAX_CONCURRENT_REQUESTS=10
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  postgres:
+    image: pgvector/pgvector:pg15
+    environment:
+      - POSTGRES_DB=llm-proxy
+      - POSTGRES_USER=llm-proxy
+      - POSTGRES_PASSWORD=llm-proxy_dev_password
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U llm-proxy -d llm-proxy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:

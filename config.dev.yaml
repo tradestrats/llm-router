@@ -1,0 +1,70 @@
+# Development Configuration
+# Optimized for fast learning and experimentation
+
+server:
+  host: "0.0.0.0"
+  port: "8080"
+  app_name: "LLM Router-Dev"
+  referer_url: "http://localhost:8080"
+  cors_origins: ["*"]
+
+llm_provider:
+  api_key: "${OPENROUTER_API_KEY}"
+  base_url: "https://openrouter.ai/api/v1"
+  allowed_models:
+    # Free models for development
+    - "meta-llama/llama-3.2-3b-instruct:free"
+    - "meta-llama/llama-3.2-1b-instruct:free"
+    - "google/gemma-2-9b-it:free"
+    - "microsoft/phi-3-mini-128k-instruct:free"
+    - "qwen/qwen-2-7b-instruct:free"
+
+bandit:
+  default_model: "meta-llama/llama-3.2-3b-instruct:free"
+  thompson_sampling:
+    feedback_weight: 0.8        # High feedback weight for learning
+    latency_weight: 0.1         # Lower latency priority for dev
+    cost_weight: -0.1           # Lower cost priority (using free models)
+    exploration_rate: 0.3       # High exploration for faster learning
+  similarity:
+    threshold: 0.6              # Lower threshold for more aggressive matching
+    max_similar_requests: 20    # Fewer requests for faster queries
+    recency_days: 7             # Shorter window for quick adaptation
+    min_similar_requests: 3     # Lower minimum for quicker decisions
+  cold_start:
+    min_confidence_score: 0.05  # Lower threshold to start using bandit sooner
+    optimistic_prior: 0.8
+    exploration_bonus: 0.2      # Higher bonus for trying new models
+    min_requests_for_global: 5  # Fewer requests needed for global stats
+  persistence:
+    batch_size: 50              # Smaller batches for dev
+
+embedding:
+  service_type: "http"
+  service_url: "http://localhost:8001"
+  model_path: "./models/all-MiniLM-L6-v2"
+  max_workers: 2              # Fewer workers for dev
+  cache_size: 500             # Smaller cache for dev
+  timeout_ms: 5000
+
+database:
+  enable_persistence: false   # In-memory for development
+  host: "localhost"
+  port: "5432"
+  user: "llm-router"
+  name: "llm-router_dev"
+  ssl_mode: "disable"
+  workers: 2
+  buffer_size: 100
+
+circuit_breaker:
+  enabled: true
+  failure_threshold: 3        # Lower threshold for dev
+  success_threshold: 2
+  timeout: 30s                # Shorter timeout for dev
+  max_requests: 5
+
+logging:
+  level: "debug"              # Verbose logging for development
+  format: "text"              # Human-readable format
+  report_caller: true         # Include caller info for debugging
