@@ -262,9 +262,12 @@ func (cr *ContextualRouter) thompsonSampleSimilar(similarRequests []bandit.Simil
 		var totalReward, totalWeight float64
 		for _, req := range requests {
 			// Calculate compound reward based on feedback, latency, and cost
-			// Normalize latency by tokens with exponential falloff (half-life at 5000ms/token)
+
+			// Speed score: Convert latency to speed reward using exponential decay
+			// Lower latency → Higher speedScore → Better reward
+			// Examples: 1ms/token → 0.86, 5000ms/token → 0.5 (half-life), 10000ms/token → 0.25
 			latencyPerToken := req.Latency / math.Max(float64(req.TokensUsed), 1.0) // ms/token
-			normalizedLatency := math.Exp(-latencyPerToken / (5000.0 / math.Ln2))  // Exponential falloff
+			speedScore := math.Exp(-latencyPerToken / (5000.0 / math.Ln2))  // Range: [0, 1], higher is faster
 
 			// Normalize cost by tokens ($/token) with linear scaling based on current LLM market pricing
 			costPerToken := req.Cost / math.Max(float64(req.TokensUsed), 1.0) // $/token
@@ -279,7 +282,7 @@ func (cr *ContextualRouter) thompsonSampleSimilar(similarRequests []bandit.Simil
 			normalizedCost := math.Min(1.0, math.Max(0.0, costPerToken / maxCostPerToken))
 
 			reward := cr.config.FeedbackWeight*req.Feedback +
-				cr.config.LatencyWeight*normalizedLatency +
+				cr.config.LatencyWeight*speedScore +
 				cr.config.CostWeight*normalizedCost
 
 			// Weight by similarity (more similar requests have higher influence)
