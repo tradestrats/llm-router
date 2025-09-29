@@ -17,10 +17,12 @@ jobs:
 
     - name: Install dependencies
       run: |
-        apk add --no-cache git make
+        apk add --no-cache git make gcc musl-dev
         go mod download
 
     - name: Run tests, build, and lint in parallel
+      env:
+        CGO_ENABLED: 1
       run: |
         go test ./... &
         go build -o bin/llm-proxy main.go &
