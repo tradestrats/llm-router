@@ -27,10 +27,10 @@ type CircuitBreakerConfig struct {
 func DefaultCircuitBreakerConfig() CircuitBreakerConfig {
 	return CircuitBreakerConfig{
 		Enabled:          true,
-		FailureThreshold: 5,  // Open after 5 consecutive failures
-		SuccessThreshold: 2,  // Close after 2 successes in half-open state
+		FailureThreshold: 5,                // Open after 5 consecutive failures
+		SuccessThreshold: 2,                // Close after 2 successes in half-open state
 		Timeout:          60 * time.Second, // Stay open for 60 seconds
-		MaxRequests:      3,  // Allow max 3 requests in half-open state
+		MaxRequests:      3,                // Allow max 3 requests in half-open state
 	}
 }
 
@@ -166,7 +166,7 @@ func (c *CircuitBreakerProvider) getOrCreateBreaker(model string) *gobreaker.Cir
 		ReadyToTrip: func(counts gobreaker.Counts) bool {
 			// Trip (open) the circuit if we have enough total requests and the failure rate is high
 			return counts.Requests >= c.config.FailureThreshold &&
-				   counts.TotalFailures >= c.config.FailureThreshold
+				counts.TotalFailures >= c.config.FailureThreshold
 		},
 		OnStateChange: func(name string, from gobreaker.State, to gobreaker.State) {
 			logrus.WithFields(logrus.Fields{

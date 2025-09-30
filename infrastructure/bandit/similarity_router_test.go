@@ -360,7 +360,7 @@ func TestContextualRouter_RewardNormalization(t *testing.T) {
 		MaxSimilarRequests:  50,
 		RecencyDays:         30,
 		FeedbackWeight:      1.0,  // Equal weight to feedback
-		LatencyWeight:       1.0, // Positive weight for latency (rewards speed)
+		LatencyWeight:       1.0,  // Positive weight for latency (rewards speed)
 		CostWeight:          -1.0, // Negative weight for cost (bad)
 		MinSimilarRequests:  1,    // Lower threshold for testing
 		DefaultModel:        "test-model",
@@ -526,8 +526,8 @@ func TestContextualRouter_RewardCalculationCorrectness(t *testing.T) {
 		RequestID:  "fast-req",
 		Model:      "test-model",
 		Similarity: 0.9,
-		Latency:    1000.0,  // 1 second
-		TokensUsed: 100,     // 10ms/token - very efficient
+		Latency:    1000.0, // 1 second
+		TokensUsed: 100,    // 10ms/token - very efficient
 		Cost:       0.1,
 		Feedback:   0.8,
 		CreatedAt:  "2023-01-01T00:00:00Z",
@@ -549,7 +549,7 @@ func TestContextualRouter_RewardCalculationCorrectness(t *testing.T) {
 	fastNormalizedLatency := math.Exp(-fastLatencyPerToken / (5000.0 / math.Ln2))
 	fastCostPerToken := fastRequest.Cost / math.Max(float64(fastRequest.TokensUsed), 1.0)
 	maxCostPerToken := 0.0006 // Most expensive current models
-	fastNormalizedCost := math.Min(1.0, math.Max(0.0, fastCostPerToken / maxCostPerToken))
+	fastNormalizedCost := math.Min(1.0, math.Max(0.0, fastCostPerToken/maxCostPerToken))
 	fastReward := config.FeedbackWeight*fastRequest.Feedback +
 		config.LatencyWeight*fastNormalizedLatency +
 		config.CostWeight*fastNormalizedCost
@@ -557,7 +557,7 @@ func TestContextualRouter_RewardCalculationCorrectness(t *testing.T) {
 	slowLatencyPerToken := slowRequest.Latency / math.Max(float64(slowRequest.TokensUsed), 1.0)
 	slowNormalizedLatency := math.Exp(-slowLatencyPerToken / (5000.0 / math.Ln2))
 	slowCostPerToken := slowRequest.Cost / math.Max(float64(slowRequest.TokensUsed), 1.0)
-	slowNormalizedCost := math.Min(1.0, math.Max(0.0, slowCostPerToken / maxCostPerToken))
+	slowNormalizedCost := math.Min(1.0, math.Max(0.0, slowCostPerToken/maxCostPerToken))
 	slowReward := config.FeedbackWeight*slowRequest.Feedback +
 		config.LatencyWeight*slowNormalizedLatency +
 		config.CostWeight*slowNormalizedCost
@@ -635,7 +635,7 @@ func TestContextualRouter_CostPerTokenNormalization(t *testing.T) {
 	cheapNormalizedLatency := math.Exp(-cheapLatencyPerToken / (5000.0 / math.Ln2))
 	cheapCostPerToken := cheapRequest.Cost / math.Max(float64(cheapRequest.TokensUsed), 1.0)
 	maxCostPerToken := 0.0006 // Most expensive current models
-	cheapNormalizedCost := math.Min(1.0, math.Max(0.0, cheapCostPerToken / maxCostPerToken))
+	cheapNormalizedCost := math.Min(1.0, math.Max(0.0, cheapCostPerToken/maxCostPerToken))
 	cheapReward := config.FeedbackWeight*cheapRequest.Feedback +
 		config.LatencyWeight*cheapNormalizedLatency +
 		config.CostWeight*cheapNormalizedCost
@@ -643,7 +643,7 @@ func TestContextualRouter_CostPerTokenNormalization(t *testing.T) {
 	expensiveLatencyPerToken := expensiveRequest.Latency / math.Max(float64(expensiveRequest.TokensUsed), 1.0)
 	expensiveNormalizedLatency := math.Exp(-expensiveLatencyPerToken / (5000.0 / math.Ln2))
 	expensiveCostPerToken := expensiveRequest.Cost / math.Max(float64(expensiveRequest.TokensUsed), 1.0)
-	expensiveNormalizedCost := math.Min(1.0, math.Max(0.0, expensiveCostPerToken / maxCostPerToken))
+	expensiveNormalizedCost := math.Min(1.0, math.Max(0.0, expensiveCostPerToken/maxCostPerToken))
 	expensiveReward := config.FeedbackWeight*expensiveRequest.Feedback +
 		config.LatencyWeight*expensiveNormalizedLatency +
 		config.CostWeight*expensiveNormalizedCost
@@ -777,7 +777,7 @@ func (m *MockStateManagerMultiModel) GetArm(model string) *bandit.BanditArm {
 func (m *MockStateManagerMultiModel) GetStatistics() map[string]interface{} {
 	return map[string]interface{}{
 		"total_arms": len(m.GetAllArms()),
-		"test": true,
+		"test":       true,
 	}
 }
 

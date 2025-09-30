@@ -11,11 +11,11 @@ import (
 // rewards faster models (lower latency) with higher scores
 func TestSpeedScoreCalculation(t *testing.T) {
 	tests := []struct {
-		name             string
-		latencyMs        float64
-		tokensUsed       int
-		expectedRange    [2]float64 // [min, max] expected speedScore
-		description      string
+		name          string
+		latencyMs     float64
+		tokensUsed    int
+		expectedRange [2]float64 // [min, max] expected speedScore
+		description   string
 	}{
 		{
 			name:          "very fast model",
@@ -82,7 +82,7 @@ func TestRewardCalculationDirection(t *testing.T) {
 			name: "fast and cheap model should have high reward",
 			request: bandit.SimilarRequest{
 				Model:      "fast-cheap-model",
-				Latency:    100,    // 1ms/token - very fast
+				Latency:    100, // 1ms/token - very fast
 				TokensUsed: 100,
 				Cost:       0.0001, // $0.000001/token - very cheap
 				Feedback:   0.8,
@@ -148,7 +148,7 @@ func TestRewardCalculationDirection(t *testing.T) {
 func TestLatencyWeightSign(t *testing.T) {
 	// Two models with same feedback and cost, different latencies
 	fastModel := bandit.SimilarRequest{
-		Latency:    100,  // 1ms/token
+		Latency:    100, // 1ms/token
 		TokensUsed: 100,
 		Cost:       0.01, // Same cost
 		Feedback:   0.5,  // Same feedback
@@ -163,7 +163,7 @@ func TestLatencyWeightSign(t *testing.T) {
 
 	config := bandit.BanditConfig{
 		FeedbackWeight: 0.6,
-		LatencyWeight:  0.2,  // POSITIVE weight
+		LatencyWeight:  0.2, // POSITIVE weight
 		CostWeight:     -0.2,
 	}
 

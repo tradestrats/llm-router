@@ -31,9 +31,9 @@ type EmbeddingService interface {
 
 // EmbeddingConfig holds configuration for embedding service
 type EmbeddingConfig struct {
-	ModelPath       string // Path to ONNX model file
-	MaxWorkers      int    // Number of concurrent inference workers
-	MaxTextLength   int    // Maximum text length to process
-	InferenceTimeout int   // Timeout in milliseconds
-	CacheSize       int    // LRU cache size for embeddings
+	ModelPath        string // Path to ONNX model file
+	MaxWorkers       int    // Number of concurrent inference workers
+	MaxTextLength    int    // Maximum text length to process
+	InferenceTimeout int    // Timeout in milliseconds
+	CacheSize        int    // LRU cache size for embeddings
 }

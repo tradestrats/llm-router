@@ -267,7 +267,7 @@ func (cr *ContextualRouter) thompsonSampleSimilar(similarRequests []bandit.Simil
 			// Lower latency → Higher speedScore → Better reward
 			// Examples: 1ms/token → 0.86, 5000ms/token → 0.5 (half-life), 10000ms/token → 0.25
 			latencyPerToken := req.Latency / math.Max(float64(req.TokensUsed), 1.0) // ms/token
-			speedScore := math.Exp(-latencyPerToken / (5000.0 / math.Ln2))  // Range: [0, 1], higher is faster
+			speedScore := math.Exp(-latencyPerToken / (5000.0 / math.Ln2))          // Range: [0, 1], higher is faster
 
 			// Normalize cost by tokens ($/token) with linear scaling based on current LLM market pricing
 			costPerToken := req.Cost / math.Max(float64(req.TokensUsed), 1.0) // $/token
@@ -278,8 +278,8 @@ func (cr *ContextualRouter) thompsonSampleSimilar(similarRequests []bandit.Simil
 			// Mid-tier models (GPT-4o-mini, Claude Haiku): ~$0.000015/token
 			// Premium models (GPT-4o, Claude Sonnet): ~$0.00015/token
 			// Top-tier models (o1-preview): ~$0.0006/token
-			maxCostPerToken := 0.0006     // Most expensive current models
-			normalizedCost := math.Min(1.0, math.Max(0.0, costPerToken / maxCostPerToken))
+			maxCostPerToken := 0.0006 // Most expensive current models
+			normalizedCost := math.Min(1.0, math.Max(0.0, costPerToken/maxCostPerToken))
 
 			reward := cr.config.FeedbackWeight*req.Feedback +
 				cr.config.LatencyWeight*speedScore +
@@ -609,9 +609,9 @@ func (cr *ContextualRouter) selectFallbackModel() string {
 	if len(availableModels) > 0 {
 		selectedModel := availableModels[rand.Intn(len(availableModels))]
 		logrus.WithFields(logrus.Fields{
-			"selected_model":     selectedModel,
-			"available_models":   availableModels,
-			"total_models":       len(availableModels),
+			"selected_model":   selectedModel,
+			"available_models": availableModels,
+			"total_models":     len(availableModels),
 		}).Info("Randomly selected fallback model")
 		return selectedModel
 	}

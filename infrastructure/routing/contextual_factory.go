@@ -60,7 +60,7 @@ func DefaultContextualRoutingConfig() ContextualRoutingConfig {
 		MaxSimilarRequests:  50,
 		RecencyDays:         30,
 		FeedbackWeight:      0.6,
-		LatencyWeight:       0.2, // Positive because normalizedLatency rewards speed
+		LatencyWeight:       0.2,  // Positive because normalizedLatency rewards speed
 		CostWeight:          -0.2, // Negative because lower is better
 		ExplorationRate:     0.1,
 		MinSimilarRequests:  5,

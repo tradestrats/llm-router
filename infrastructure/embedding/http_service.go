@@ -24,17 +24,17 @@ import (
 
 // HTTPEmbeddingService implements embedding.EmbeddingService using HTTP calls to Python service
 type HTTPEmbeddingService struct {
-	config        embedding.EmbeddingConfig
-	serviceURL    string
-	httpClient    *http.Client
-	workers       chan struct{} // Semaphore for worker pool
-	cache         *lru.Cache[string, []float32]
-	mu            sync.RWMutex
-	initialized   bool
-	closed        bool
+	config         embedding.EmbeddingConfig
+	serviceURL     string
+	httpClient     *http.Client
+	workers        chan struct{} // Semaphore for worker pool
+	cache          *lru.Cache[string, []float32]
+	mu             sync.RWMutex
+	initialized    bool
+	closed         bool
 	circuitBreaker *gobreaker.CircuitBreaker
-	rng           *rand.Rand
-	rngMutex      sync.Mutex
+	rng            *rand.Rand
+	rngMutex       sync.Mutex
 }
 
 // EmbedRequest represents the request payload for the Python embedding service
@@ -102,9 +102,9 @@ func NewHTTPEmbeddingService(config embedding.EmbeddingConfig, serviceURL string
 	// Configure circuit breaker for resilience
 	cbSettings := gobreaker.Settings{
 		Name:        "embedding-service",
-		MaxRequests: 3,                     // Allow 3 requests in half-open state
-		Interval:    60 * time.Second,      // Reset counts every minute
-		Timeout:     30 * time.Second,      // Stay open for 30 seconds
+		MaxRequests: 3,                // Allow 3 requests in half-open state
+		Interval:    60 * time.Second, // Reset counts every minute
+		Timeout:     30 * time.Second, // Stay open for 30 seconds
 		ReadyToTrip: func(counts gobreaker.Counts) bool {
 			// Open circuit after 3 consecutive failures
 			return counts.ConsecutiveFailures >= 3

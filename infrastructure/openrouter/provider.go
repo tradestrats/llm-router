@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	appchat "llm-router/domain/chat"
 	"llm-router/domain/bandit"
+	appchat "llm-router/domain/chat"
 
 	"github.com/sirupsen/logrus"
 )
