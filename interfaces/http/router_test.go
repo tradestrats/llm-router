@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	domain "llm-router/domain/chat"
 	"net/http"
 	"net/http/httptest"
-	domain "llm-router/domain/chat"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -327,11 +328,19 @@ func TestRouter_corsMiddleware_OPTIONS(t *testing.T) {
 
 func TestRouter_requestIDMiddleware(t *testing.T) {
 	service := &MockChatService{}
+	service.On("Chat", mock.Anything, mock.Anything).Return(&domain.Response{
+		ID:      "test-response-id",
+		Model:   "test-model",
+		Choices: []domain.Choice{{Message: domain.Message{Role: "assistant", Content: "test"}}},
+		Usage:   domain.Usage{PromptTokens: 10, CompletionTokens: 20, TotalTokens: 30},
+	}, nil)
 	router := NewRouter(service, []string{"*"})
 	engine := router.SetupRoutes()
 
 	// Test with client-provided request ID
-	req, _ := http.NewRequest("GET", "/health", nil)
+	body := `{"messages":[{"role":"user","content":"test"}],"model":"test-model"}`
+	req, _ := http.NewRequest("POST", "/chat/completions", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Request-ID", "550e8400-e29b-41d4-a716-446655440000")
 	w := httptest.NewRecorder()
 
@@ -340,20 +349,22 @@ func TestRouter_requestIDMiddleware(t *testing.T) {
 	// Should echo back the client-provided ID
 	requestID := w.Header().Get("X-Request-ID")
 	assert.Equal(t, "550e8400-e29b-41d4-a716-446655440000", requestID)
-	
+
 	// Should also have UUID header
 	requestUUID := w.Header().Get("X-Request-UUID")
 	assert.Equal(t, "550e8400-e29b-41d4-a716-446655440000", requestUUID)
 
 	// Test without client-provided request ID - should be rejected
-	req2, _ := http.NewRequest("GET", "/health", nil)
+	body2 := `{"messages":[{"role":"user","content":"test"}],"model":"test-model"}`
+	req2, _ := http.NewRequest("POST", "/chat/completions", strings.NewReader(body2))
+	req2.Header.Set("Content-Type", "application/json")
 	w2 := httptest.NewRecorder()
 
 	engine.ServeHTTP(w2, req2)
 
 	// Should return 400 Bad Request
 	assert.Equal(t, http.StatusBadRequest, w2.Code)
-	
+
 	// Should have error message
 	var response map[string]interface{}
 	err := json.Unmarshal(w2.Body.Bytes(), &response)

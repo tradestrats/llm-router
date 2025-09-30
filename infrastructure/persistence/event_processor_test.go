@@ -398,6 +398,9 @@ func TestEventProcessor_QueueFull(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "queue is full")
 
+	// Wait for worker to process the first event
+	time.Sleep(100 * time.Millisecond)
+
 	// Verify expectations
 	requestRepo.AssertExpectations(t)
 }

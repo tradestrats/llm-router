@@ -40,7 +40,7 @@ func TestProvider_selectModel_UserSpecified(t *testing.T) {
 			name:          "case_sensitive_match",
 			allowedModels: []string{"GPT-4", "claude-3"},
 			requestModel:  "gpt-4", // Different case
-			expected:      "", // Will not match, fallback to routing
+			expected:      "",      // Will not match, fallback to routing
 			description:   "Model matching should be case-sensitive",
 		},
 	}

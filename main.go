@@ -72,9 +72,9 @@ func main() {
 	provider := openrouter.NewCircuitBreakerProvider(baseProvider, baseProvider, circuitBreakerConfig)
 
 	logrus.WithFields(logrus.Fields{
-		"enabled":          circuitBreakerConfig.Enabled,
+		"enabled":           circuitBreakerConfig.Enabled,
 		"failure_threshold": circuitBreakerConfig.FailureThreshold,
-		"timeout":          circuitBreakerConfig.Timeout,
+		"timeout":           circuitBreakerConfig.Timeout,
 	}).Info("Circuit breaker configured")
 
 	var service *appchat.Service

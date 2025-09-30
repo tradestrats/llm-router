@@ -712,6 +712,11 @@ func TestStateManager_CacheConcurrency(t *testing.T) {
 	err = db.WithContext(ctx).Create(metrics).Error
 	require.NoError(t, err)
 
+	// Prime the cache with an initial call to ensure data is ready
+	initialArms := sm.GetAllArms()
+	require.Len(t, initialArms, 1, "Initial cache population should return 1 arm")
+	require.Contains(t, initialArms, "concurrent-cache-model", "Initial cache should contain test model")
+
 	// Run concurrent GetAllArms calls
 	const numGoroutines = 10
 	var wg sync.WaitGroup
@@ -736,9 +741,9 @@ func TestStateManager_CacheConcurrency(t *testing.T) {
 		}
 	}
 
-	// Should have some cache hits (not all misses)
+	// Should have cache hits (since cache was primed)
 	stats := sm.GetCacheStatistics()
-	assert.GreaterOrEqual(t, stats["cache_hits"].(int64), int64(0))
+	assert.Greater(t, stats["cache_hits"].(int64), int64(0), "Should have at least one cache hit from concurrent calls")
 }
 
 // TestStateManager_CacheDeepCopy tests that cache returns deep copies
@@ -847,7 +852,7 @@ func TestStateManager_GetStatisticsWithCache(t *testing.T) {
 	sm.GetAllArms() // Cache miss
 	sm.GetAllArms() // Cache hit
 
-	// Get statistics
+	// Get statistics (NOTE: GetStatistics calls GetAllArms internally, adding another cache hit)
 	stats := sm.GetStatistics()
 
 	// Should include cache statistics
@@ -860,9 +865,10 @@ func TestStateManager_GetStatisticsWithCache(t *testing.T) {
 	assert.Contains(t, cacheStats, "cache_size")
 	assert.Contains(t, cacheStats, "cache_ttl_seconds")
 
-	assert.Equal(t, int64(1), cacheStats["cache_hits"])
+	// Expect 2 cache hits: one from explicit GetAllArms() call, one from GetStatistics() internal call
+	assert.Equal(t, int64(2), cacheStats["cache_hits"])
 	assert.Equal(t, int64(1), cacheStats["cache_misses"])
-	assert.Equal(t, float64(0.5), cacheStats["cache_hit_ratio"])
+	assert.InDelta(t, float64(2.0/3.0), cacheStats["cache_hit_ratio"], 0.01)
 	assert.Equal(t, 1, cacheStats["cache_size"])
 	assert.Equal(t, float64(30), cacheStats["cache_ttl_seconds"])
 }

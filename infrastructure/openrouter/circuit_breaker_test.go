@@ -215,8 +215,8 @@ func TestCircuitBreakerProvider_Stream_Disabled(t *testing.T) {
 	cbProvider := NewCircuitBreakerProvider(mockProvider, mockStream, config)
 
 	req := &chat.Request{
-		Model:   "test-model",
-		Stream:  true,
+		Model:  "test-model",
+		Stream: true,
 	}
 
 	onChunk := func(chunk chat.StreamChunk) error {

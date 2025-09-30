@@ -46,10 +46,10 @@ type StateManager interface {
 
 // PerformanceMetrics holds performance data for bandit updates
 type PerformanceMetrics struct {
-	Latency      float64 // Latency in milliseconds
-	Cost         float64 // Cost in dollars
+	Latency       float64 // Latency in milliseconds
+	Cost          float64 // Cost in dollars
 	FeedbackScore float64 // User feedback score (0-1)
-	Success      bool    // Whether the request succeeded
+	Success       bool    // Whether the request succeeded
 }
 
 // SimilarRequest represents a similar request found via embedding search
@@ -69,13 +69,13 @@ type BanditConfig struct {
 	// Similarity search parameters
 	SimilarityThreshold float64 // Minimum cosine similarity (0-1)
 	MaxSimilarRequests  int     // Maximum similar requests to consider (top-K)
-	RecencyDays        int     // Only consider requests from last N days
+	RecencyDays         int     // Only consider requests from last N days
 
 	// Thompson sampling parameters
-	FeedbackWeight    float64 // Weight for feedback score in reward calculation
-	LatencyWeight     float64 // Weight for latency in reward calculation (positive, rewards speed)
-	CostWeight        float64 // Weight for cost in reward calculation (negative)
-	ExplorationRate   float64 // Exploration vs exploitation balance (0-1)
+	FeedbackWeight  float64 // Weight for feedback score in reward calculation
+	LatencyWeight   float64 // Weight for latency in reward calculation (positive, rewards speed)
+	CostWeight      float64 // Weight for cost in reward calculation (negative)
+	ExplorationRate float64 // Exploration vs exploitation balance (0-1)
 
 	// Cold start and resilience parameters
 	MinSimilarRequests   int     // Minimum similar requests needed to use similarity routing
@@ -91,12 +91,12 @@ type BanditConfig struct {
 
 // BanditArm represents a model's performance statistics
 type BanditArm struct {
-	Model           string
-	RequestCount    int
-	SuccessCount    int
-	TotalLatency    float64
-	TotalCost       float64
-	TotalFeedback   float64
-	FeedbackCount   int
-	LastUpdated     string
+	Model         string
+	RequestCount  int
+	SuccessCount  int
+	TotalLatency  float64
+	TotalCost     float64
+	TotalFeedback float64
+	FeedbackCount int
+	LastUpdated   string
 }

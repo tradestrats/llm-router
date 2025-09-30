@@ -3,9 +3,9 @@ package openrouter
 import (
 	"context"
 	"encoding/json"
+	"llm-router/domain/chat"
 	"net/http"
 	"net/http/httptest"
-	"llm-router/domain/chat"
 	"testing"
 	"time"
 
